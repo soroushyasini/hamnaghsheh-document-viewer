@@ -420,12 +420,36 @@ $file_url = htmlspecialchars($file, ENT_QUOTES, 'UTF-8');
 
         /**
          * Initialize PDF viewer
+         * Updated: 29/12/2025 - Added CMap support for Persian/Arabic/CJK fonts
          */
         async function initViewer() {
             const pdfUrl = '<?php echo $file_url; ?>';
 
             try {
-                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                /**
+                 * Load PDF with CMap support for Persian/Arabic/CJK fonts
+                 * Added by: Arash & Soroush - 29/12/2025
+                 * 
+                 * CMaps (Character Maps) are required for proper rendering of:
+                 * - Persian (Farsi)
+                 * - Arabic
+                 * - Chinese, Japanese, Korean (CJK)
+                 * - Other complex scripts
+                 */
+                const loadingTask = pdfjsLib.getDocument({
+                    url: pdfUrl,
+                    // CMap support for complex scripts and right-to-left languages
+                    cMapUrl: './assets/js/pdfjs/cmaps/',
+                    cMapPacked: true,
+                    // Standard fonts for better text rendering
+                    standardFontDataUrl: './assets/js/pdfjs/standard_fonts/',
+                    // Disable worker fetch for better compatibility
+                    useWorkerFetch: false,
+                    isEvalSupported: false,
+                    // Increase max image size for high-resolution PDFs
+                    maxImageSize: 16777216 // 16 MB (adjustable based on needs)
+                });
+                
                 pdfDoc = await loadingTask.promise;
 
                 // Hide loading
@@ -441,7 +465,9 @@ $file_url = htmlspecialchars($file, ENT_QUOTES, 'UTF-8');
 
             } catch (error) {
                 console.error('Error loading PDF:', error);
-                showError('امکان نمایش فایل PDF وجود ندارد. لطفاً دوباره تلاش کنید.');
+                // Show detailed error message
+                const errorMessage = error.message || 'خطای نامشخص';
+                showError(`امکان نمایش فایل PDF وجود ندارد. لطفاً دوباره تلاش کنید.<br><small style="font-size: 12px; opacity: 0.8; display: block; margin-top: 10px;">${errorMessage}</small>`);
             }
         }
 
