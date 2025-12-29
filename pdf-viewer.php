@@ -280,6 +280,15 @@ $file_url = htmlspecialchars($file, ENT_QUOTES, 'UTF-8');
         const canvas = document.getElementById('pdf-canvas');
         const ctx = canvas.getContext('2d');
 
+        /**
+         * HTML escape function to prevent XSS attacks
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // UI Elements
         const loading = document.getElementById('loading');
         const prevButton = document.getElementById('prev-page');
@@ -465,8 +474,8 @@ $file_url = htmlspecialchars($file, ENT_QUOTES, 'UTF-8');
 
             } catch (error) {
                 console.error('Error loading PDF:', error);
-                // Show detailed error message
-                const errorMessage = error.message || 'خطای نامشخص';
+                // Show detailed error message with XSS protection
+                const errorMessage = escapeHtml(error.message || 'خطای نامشخص');
                 showError(`امکان نمایش فایل PDF وجود ندارد. لطفاً دوباره تلاش کنید.<br><small style="font-size: 12px; opacity: 0.8; display: block; margin-top: 10px;">${errorMessage}</small>`);
             }
         }
